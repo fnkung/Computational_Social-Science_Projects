@@ -1,20 +1,19 @@
-(base) fengkung@wifi-10-40-19-125 git % git clone https://github.com/fnkung/Computational_Social-Science_Projects
-Cloning into 'Computational_Social-Science_Projects'...
+git clone https://github.com/fnkung/Computational_Social_Science_Projects
 
 (base) fengkung@wifi-10-40-19-125 git % ls
 Computational-Social-Science-Training-Program
-Computational_Social-Science_Projects
+Computational_Social_Science_Projects
 GitHub-Collaboration-Practice
 git-challenges
 git-challengesjonah
 gitchallenge2
 my_first_repo
 
-(base) fengkung@wifi-10-40-19-125 git % cd Computational_Social-Science_Projects
+cd Computational_Social_Science_Projects
 
-(base) fengkung@wifi-10-40-19-125 Computational_Social-Science_Projects % mkdir Project1
+mkdir Project1
 
-(base) fengkung@wifi-10-40-19-125 Computational_Social-Science_Projects % ls
+(base) fengkung@wifi-10-40-19-125 Computational_Social_Science_Projects % ls
 Project1	README.md
 
 cd Project1
