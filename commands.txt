@@ -24,6 +24,6 @@ nano commands.txt
 git add commands.txt
 git status
 git commit -m "added text file with commands run"
-git push --set-upstream origin Kung_branch
+git push
 git status
 
