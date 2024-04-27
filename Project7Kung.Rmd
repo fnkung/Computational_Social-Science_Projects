@@ -110,8 +110,7 @@ ggplot(data_subset5, aes(x = State, y = uninsured_rate)) +
        y = "Uninsured Rate")
 ```
 
-```{The states which had the highest uninsured rates prior to 2014 are Nevada, Florida, New Mexico and Texas. The lowest are Massachusetts, Hawaii, DC, Minnesota and Iowa}
-```
+The states which had the highest uninsured rates prior to 2014 are Nevada, Florida, New Mexico and Texas. The lowest are Massachusetts, Hawaii, DC, Minnesota and Iowa
 
 ```{r}
 # most uninsured Americans
@@ -171,8 +170,7 @@ ggplot(head(data_ordered_last_year, 10), aes(x = reorder(State, -uninsured_popul
   labs(title = paste("Top 10 Most Uninsured Populations in", last_year), x = "State", y = "Uninsured Population")
 ```
 
-```{The states with the most uninsured population before 2014 include California at the highest, then NY, Illinois, Ohio and Pennsylvania. The states with the most uninsured population in the last year 2020 is Texas at the highest, than California, Florida, Georgia and N Carolina}
-```
+The states with the most uninsured population before 2014 include California at the highest, then NY, Illinois, Ohio and Pennsylvania. The states with the most uninsured population in the last year 2020 is Texas at the highest, than California, Florida, Georgia and N Carolina
 
 # Difference-in-Differences Estimation
 
@@ -226,6 +224,8 @@ ggplot(data_nd_sd, aes(x = year, y = uninsured_rate, color = State)) +
   scale_color_discrete(name = "State")
 ```
 
+Definitely not a good pick for parallel trends assumption, the trends do not move together for North and South Dakota.
+
 ```{r}
 # Combine the two data subsets
 combined_data <- rbind(data_2014, data_na)
@@ -265,6 +265,8 @@ ggplot(data_nd_sd, aes(x = year, y = uninsured_rate, color = State)) +
   scale_color_discrete(name = "State")
 ```
 
+Close, but Kentucky drops much steeper around the cutoff year of adoption 2014.
+
 ```{r}
 # Trying Kentucky and Georgia
 
@@ -280,6 +282,7 @@ ggplot(data_nd_sd, aes(x = year, y = uninsured_rate, color = State)) +
   scale_color_discrete(name = "State")
 ```
 
+-   This is pretty good, Kentucky drops more around 2014 but the trends do seem mostly parallel.
 -   Estimates a difference-in-differences estimate of the effect of the Medicaid expansion on the uninsured share of the population. You may follow the lab example where we estimate the differences in one pre-treatment and one post-treatment period, or take an average of the pre-treatment and post-treatment outcomes
 
 ```{r}
@@ -315,11 +318,15 @@ diff_in_diffs
 
 -   Card/Krueger's original piece utilized the fact that towns on either side of the Delaware river are likely to be quite similar to one another in terms of demographics, economics, etc. Why is that intuition harder to replicate with this data?
 
--   **Answer**: It is harder to replicate because Card/Krueger could compare towns that are likely to be similar. However, states that expanded Medicaid and the states that didn't expand are likely going to be different in terms of their political and social makeup which led to whether they adopted or not. For instance, many of the states that didn't adopt are in the South. Many states that did adopt are in New England or the West.
+-   **Answer**: It is harder to replicate because Card/Krueger could compare towns that are likely to be similar due to being nearby. However, states that expanded Medicaid and the states that didn't expand are likely going to be different in terms of their political and social makeup which led to whether they adopted or not. For instance, many of the states that didn't adopt are in the South. Many states that did adopt are in New England or the West. These states will differ from each other.
 
 -   What are the strengths and weaknesses of using the parallel trends assumption in difference-in-differences estimates?
 
--   **Answer**: Strengths of the parallel trends assumption: simple to understand the assumption that without treatment, control and treatment groups would have followed the same trend; can check visually with a graph; controls for time-varying factors which affect both the control and treated groups. Weaknesses: its a big assumption because you cannot observe what actually happened if the group was untreated; is sensitive to what control group and time period you choose; affected by unobserved heterogeneity if other effects besides the treatment were happening that affected control and treatment differently; need enough pre-treatment time periods for it to be a good assumption.
+-   **Answer**:
+
+-   Strengths of the parallel trends assumption: simple to understand the assumption that without treatment, control and treatment groups would have followed the same trend; can check visually with a graph; controls for time-varying factors which affect both the control and treated groups.
+
+-   Weaknesses: its a big assumption because you cannot observe what actually happened if the group was untreated; is sensitive to what control group and time period you choose; affected by unobserved heterogeneity if other effects besides the treatment were happening that affected control and treatment differently; need enough pre-treatment time periods for it to be a good assumption.
 
 # Synthetic Control
 
@@ -332,13 +339,12 @@ Do the following:
 -   Choose a state that adopted the Medicaid expansion after January 1, 2014. Construct a non-augmented synthetic control and plot the results (both pre-treatment fit and post-treatment differences). Also report the average ATT and L2 imbalance.
 
 ```{r}
-# Create treatment variable
+# Create treatment variable -- treatment is any year for the state Indiana after adoption in 2015, zero for control for Indiana prior and for other states
 medicaid_expansion <- 
   medicaid_expansion %>%
   mutate(treatment = ifelse(State == "Indiana" & year >= 2015, 1, 0))
 
-# We talked about how the synthetic control should set treatment = 1 for all states for years that are after their own date adopted -- but this would be the setup for following section on the staggered adoption multisynth, when I ran it with the code below setting up that treatment, it ran it as multisynth
-
+# Note -- we talked about how the synthetic control should set treatment = 1 for all states for years that are after their own date adopted -- but this would be the setup for following section on the staggered adoption multisynth, when I ran it with the code below setting up that treatment, it ran it as multisynth
 #medicaid_expansion <- 
 #  medicaid_expansion %>%
  # mutate(treatment = ifelse((State == "Indiana" & year >= 2015) | (State != "Indiana" & year #>= year(Date_Adopted)), 1, 0)) 
@@ -383,6 +389,7 @@ plot(ridge_syn)
 # barplots of weights
 
 data.frame(syn$weights) %>% # coerce to data frame since it's in vector form
+  
   # process 
   # ---------
   # change index to a column
@@ -412,6 +419,8 @@ data.frame(syn$weights) %>% # coerce to data frame since it's in vector form
 
 -   **Answer**:
 
+-   Synthetic control offers advantages of creating a control as a weighted average of donor states, which can be a better counterfactual control than a simpe DiD average. Also easy to plot and visually compare the synthetic control outcome with the treated. Also disadvantage of DiD is its heavy reliance on parallel trends assumption and could be biased from unobserved confounders which correlate with treatment and that change over time, Disadvantage of synthetic control, you need a good / large pool of control units to construct the synthetic control, may be more complicated than DiD to do.
+
 -   One of the benefits of synthetic control is that the weights are bounded between [0,1] and the weights must sum to 1. Augmentation might relax this assumption by allowing for negative weights. Does this create an interpretation problem, and how should we balance this consideration against the improvements augmentation offers in terms of imbalance in the pre-treatment period?
 
 -   **Answer**: Yes there is an interpretation problem. Nonaugmented synthetic control is easily interpretable as a weighted average of the control / donor units, and the weight corresponds to how each unit is contributing to the synthetic control. However under augmentation, its possible to have a negative weight which creates an interpretation problem, since a negative weight isn't interpretable like the positive weight as a contribution to the synthetic control. But augmentation can offer better balance in the pre-treatment period and create a synthetic control that is closer to the treatment group. We have to make a call depending on the context of the study on whether its better to have interpretability and maybe a little worse balance, or whether balance is the most important for the desired results.
@@ -432,11 +441,7 @@ Do the following:
 medicaid_expansion_multisynth <- 
   medicaid_expansion %>%
       mutate(treatment = ifelse(is.na(Date_Adopted), 0, 1 * (year >= Date_Adopted)))
-    # Create "treatment" - year Medicaid expansion was adopted
-   # mutate(Date_Adopted = ifelse(is.na(Date_Adopted), 
-   #                              Inf, Date_Adopted),
-   #        treatment = 1 * (year >= Date_Adopted))
-
+    
 # implementing staggered adoption
 # ----------------------------------------------------------------
 
@@ -522,7 +527,7 @@ filtered_data %>%
         legend.position = 'None') +
    ggtitle('Synthetic Controls for State Medicaid Expansion') +
    xlab('Time') +
-   ylab('Estimated Uninsured Rate') +
+   ylab('Change in Estimated Uninsured Rate Due to Treatment') +
   facet_wrap(~Level)   # facet-wrap by level (state in this case) for clearer presentation
 ```
 
@@ -579,7 +584,7 @@ ppool_syn_time_summ$att %>%
         legend.position = 'None') +
   ggtitle('Synthetic Controls for State Medicaid Expansion') +
   xlab('Time') +
-  ylab('Uninsured Rate') +
+  ylab('Change in Uninsured Rate Due to Treatment') +
   facet_wrap(~Level)
 ```
 
@@ -587,11 +592,32 @@ ppool_syn_time_summ$att %>%
 
 -   One feature of Medicaid is that it is jointly administered by the federal government and the states, and states have some flexibility in how they implement Medicaid. For example, during the Trump administration, several states applied for waivers where they could add work requirements to the eligibility standards (i.e. an individual needed to work for 80 hours/month to qualify for Medicaid). Given these differences, do you see evidence for the idea that different states had different treatment effect sizes?
 
--   **Answer**: Ohio and Kentucky were states that instituted the work requirements. Unfortunately, my results did not show a difference between states that instituted vs those that didn't California and Vermont. And the average ATT was zero. However, this was a sample of only 4 states, so this is not sufficient evidence either way.
+-   **Answer**: Different states did have different treatment effect sizes based on the plot, you can see how California, Vermont, Ohio and Kentucky all diverge. But the relation to the work requirement is not clear in the plot. Ohio and Kentucky were states that instituted the work requirements. Both of those states actually had slight upward trend in outcome uninsured rate around the time of Medicaid expansion, which seems surprising. Meanwhile both states without work requirements, California had a clear downward decrease in the uninsured rate while Vermont according to this plot increased their rate. This is unexpected for Vermont, given I expect that the rate should have gone down with Medicaid expansion.
+
+    And the average ATT was zero for the multisynth with picking the best nu (and very close to zero for the nu = 0 )
+
+    ```         
+    Average ATT Estimate: -0.006
+    ```
+
+    ```         
+    Average ATT Estimate: 0.000
+     
+    ```
+
+    Unfortunately, i would say these limited results did not show a conclusive difference between states that instituted work requirements (Ohio and Kentucky) vs those that didn't (California and Vermont).
+
+    However, this was a plot sampling of only 4 states, so this is not sufficient evidence either way.
 
 -   Do you see evidence for the idea that early adopters of Medicaid expansion enjoyed a larger decrease in the uninsured population?
 
--   **Answer**: For the time cohort, the ATT shows basically no effect, since its so small -0.004 and the STD is also 0.004. However, one issue is that there aren't a lot of pretreatment periods.
+-   **Answer**: For the time cohort, the average ATT shows close to no effect, since its so small -0.004 and the STD is also 0.004 so the range includes zero is possibly the true ATT.
+
+-   Looking at the plot by time cohort, it seems 2014 had a very slight negative treatment effect / decrease in uninsured, but 2015 and 2016 had a larger one, while the late adopters 2019 actually showed an increase in uninsured rate.
+
+-   However, one issue is that there aren't a lot of pretreatment periods (six years) which is important to having a good synthetic control.
+
+-   There's also even fewer states once you split them into time cohorts to be able to have an adequate sample and conclusive results. For instance, looking at the original spreadsheet, 2019 cohort adopters is only one state the state of Virginia!
 
 # General Discussion Questions
 
@@ -602,3 +628,11 @@ ppool_syn_time_summ$att %>%
 -   What role does selection into treatment play in DiD/synthetic control versus regression discontinuity? When would we want to use either method?
 
 -   **Answer**:
+
+Selection into treatment means that different units (cities, people etc) select into the treatment group in ways that can create bias if its correlated with the outcome, since its hard to separate what was the treatment effect, vs other variables that played a role in the outcome. This often happens in DiD/synthetic control because the treatment was not randomly assigned, and there are factors why a unit selects into treatment for instance why a state choose to expand Medicaid. Parallel assumption in DiD and the synthetic control help to control for this, comparing the treatment group to a control group which otherwise would have a similar trend.
+
+Regression discontinuity, there is a cutoff, and right before and after, there may be a similar trend, so the change is likely due to the treatment at the cutoff.
+
+You can only use regression dicontinuity if there is this cutoff and you can assume a similar trend before and after the cutoff.
+
+DiD/synthetic control is used if the parallel trend assumption is good, and you can compare a treatment and control group and assume that without treatment they would have followed the same trend. You also need enough pre-treatment periods of time.
