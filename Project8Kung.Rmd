@@ -360,6 +360,8 @@ tmle_fit
     \item What is a "double robust" estimator? Why does it provide a guarantee of consistency if either the outcome model or propensity score model is correctly specified? Or in other words, why does mispecifying one of the models not break the analysis? \textbf{Hint}: When answering this question, think about how your introductory statistics courses emphasized using theory to determine the correct outcome model, and in this course how we explored the benefits of matching.
 \end{enumerate}
 ```
+Double robust estimator like we discussed in the lab on TMLE means if we 1) fit the right model and estimate the expected outcome correctly OR fit the model to estimate the probability of treatment correctly then the final estimator will be consistent, meaning as the sample size grows to infinity the bias will drop to zero and it will converge to the true correct parameter. It basically gives us two chances aka doubly robust. A typical stats class emphasizes using theory to correctly specify the outcome model. However this can be difficult when theres so much complexity and like in this example, many covariates. In this class, we used the benefits of matching in these complex cases by balancing the covariates between treatment and untreated which can reduce the bias from confounding. So even if the outcome model is incorrect, this propensity score model gives us a second chance to get it correct and get a consistent estimator.
+
 # LTMLE Estimation
 
 Now imagine that everything you measured up until now was in "time period 1". Some people either choose not to or otherwise lack access to medication in that time period, but do start taking the medication in time period 2. Imagine we measure covariates like BMI, blood pressure, and cholesterol at that time for everyone in the study (indicated by a "\_2" after the covariate name).
@@ -374,7 +376,7 @@ Update your causal diagram to incorporate this new information. \textbf{Note}: I
 
 ------------------------------------------------------------------------
 
-Simplified where W0 is covariates from first time period, W1 is covariates from second, A0 is first treatment, A1 is second treatment.
+Simplified where W0 is covariates from first time period, W1 is covariates from second, A0 is first treatment, A1 is second treatment. Based on the slide from Dave's deck and the hint, i made the second time period variables ending in \_2 which are in A1 and W1 affected by the previous covariates and treatment W0 and A0
 
 ```{r}
 
@@ -472,6 +474,8 @@ result <- ltmle(data_obs_ltmle, # dataset
 result
 ```
 
+Yes there is a difference between the naive model and the estimate when you take into consideration the time confounding factors of bmi, blood pressure cholesterol. looks like there is a large estimate of effect of treatment once time confounding is taking into consideration
+
 ## Discussion Questions
 
 ```{=tex}
@@ -479,3 +483,4 @@ result
     \item What sorts of time-dependent confounding should we be especially worried about? For instance, would we be concerned about a running variable for age the same way we might be concerned about blood pressure measured at two different times?
 \end{enumerate}
 ```
+#### The time-depending confounding issue we would be worried about is if there's a variable that's affected by past treatment and affect future treatment and the outcome. We might be concerned about blood pressured measured at two different times. For instance blood pressure medication treatment 1 lowers blood pressure 2 at the second time point which then affects whether treatment is continued / blood pressure treatment 2, which then affects mortality outcome. But we wouldn't be concerned in the same way about the age variable because its not affected by treatment and just increases.
